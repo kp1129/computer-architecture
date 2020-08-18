@@ -41,6 +41,7 @@ class CPU:
             self.ram[address] = instruction
             address += 1
 
+        print(self.ram)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -88,12 +89,19 @@ class CPU:
             operand_b = self.ram[self.pc + 2]
 
             if ir == LDI:
-                operand_a = operand_b
+                print('operand a ', operand_a)
+                print('what is self.pc + 1', self.pc + 1)
+                self.ram[self.pc + 1] = operand_b
+                self.reg[operand_a] = operand_b
+                print('operand a ', operand_a)
+                print('operand b ', operand_b)
+                print("8? ", self.ram[self.pc + 1])
                 # self.reg[0] = 8
                 print(self.reg[0])
+                print(self.reg[operand_a])
                 self.pc += 3
             elif ir == PRN:
-                print(operand_a)
+                print('print ', self.reg[operand_a])
                 self.pc += 2
             elif ir == HLT:
                 running = False
