@@ -92,6 +92,7 @@ class CPU:
         HLT = 0b00000001
         LDI = 0b10000010
         PRN = 0b01000111
+        MUL = 0b10100010
         
 
         running = True
@@ -105,13 +106,25 @@ class CPU:
 
             if ir == LDI:
                 self.reg[operand_a] = operand_b
-                self.pc += 3
+                # self.pc += 3
             elif ir == PRN:
                 print(self.reg[operand_a])
-                self.pc += 2
+                # self.pc += 2
             elif ir == HLT:
                 running = False
-                self.pc += 1    
+                # self.pc += 1    
+            elif ir == MUL:
+                a = self.reg[operand_a]
+                b = self.reg[operand_b]
+                self.reg[operand_a] = a * b
+                # self.pc += 3
+
+            # increment the program counter based on
+            # how many arguments this command includes:
+            # take the command, right-shift 6 places, 
+            # and add the resulting 0, 1, or 2 to the 
+            # one-point increment
+            self.pc += 1 + (ir >> 6)    
 
     def ram_read(self, ix):
         return self.ram[ix]
