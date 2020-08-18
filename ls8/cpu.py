@@ -1,6 +1,10 @@
 """CPU functionality."""
 
-import sys
+# import sys
+
+# # grab file name from sys.argv
+# file_name = sys.argv[1]
+# print(file_name)
 
 class CPU:
     """Main CPU class."""
@@ -20,28 +24,39 @@ class CPU:
         self.interrupt_status = self.reg[6]
         self.stack_pointer = self.reg[7]
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
 
         address = 0
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        with open(file_name) as file:
+            for line in file:
+                clean_line = line.split("#")[0].strip()
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                if clean_line == "":
+                    continue
+                else:
+                    command = int(clean_line, 2)
+                    self.ram_write(command, address)
+                    # print('saved command ', self.ram[address], 'at ', address)
+                    address += 1
 
-        print(self.ram)
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
+
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
+
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -89,19 +104,10 @@ class CPU:
             operand_b = self.ram[self.pc + 2]
 
             if ir == LDI:
-                print('operand a ', operand_a)
-                print('what is self.pc + 1', self.pc + 1)
-                self.ram[self.pc + 1] = operand_b
                 self.reg[operand_a] = operand_b
-                print('operand a ', operand_a)
-                print('operand b ', operand_b)
-                print("8? ", self.ram[self.pc + 1])
-                # self.reg[0] = 8
-                print(self.reg[0])
-                print(self.reg[operand_a])
                 self.pc += 3
             elif ir == PRN:
-                print('print ', self.reg[operand_a])
+                print(self.reg[operand_a])
                 self.pc += 2
             elif ir == HLT:
                 running = False
