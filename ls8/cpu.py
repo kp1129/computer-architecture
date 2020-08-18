@@ -11,13 +11,11 @@ class CPU:
         self.ram = [0] * 256
         # 8 general purpose registers
         self.reg = [0] * 8
-        # instruction register
-        # copy of the currently executing instruction
-        self.ir = self.reg[3]
         # program counter
         # address of the currently executing instruction
-        self.pc = self.reg[4]
-
+        # starts with 0
+        self.pc = 0
+        # reserved registers
         self.interrupt_mask = self.reg[5]
         self.interrupt_status = self.reg[6]
         self.stack_pointer = self.reg[7]
@@ -75,23 +73,29 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # read the memory address in pc and store it in ir
-        hlt = 0b00000001
-        ldi = 0b10000010
-        prn = 0b01000111
-        self.ir = self.pc
-        operand_a = self.ram_read(self.ram[self.pc + 1])
-        operand_b = self.ram_read(self.ram[self.pc + 2])
+        HLT = 0b00000001
+        LDI = 0b10000010
+        PRN = 0b01000111
+        
 
         running = True
         while running:
-            if self.ir == ldi:
+            # ir, operand_a, and operand_b have to reset on each iteration
+            # read the memory address in pc and store it in ir
+            ir = self.ram[self.pc]
+            # arguments a and b
+            operand_a = self.ram[self.pc + 1]
+            operand_b = self.ram[self.pc + 2]
+
+            if ir == LDI:
                 operand_a = operand_b
+                # self.reg[0] = 8
+                print(self.reg[0])
                 self.pc += 3
-            elif self.ir == prn:
+            elif ir == PRN:
                 print(operand_a)
                 self.pc += 2
-            elif self.ir == hlt:
+            elif ir == HLT:
                 running = False
                 self.pc += 1    
 
@@ -100,6 +104,4 @@ class CPU:
     
     def ram_write(self, val, ix):
         self.ram[ix] = val
-        return val
-
 
