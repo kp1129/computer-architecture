@@ -22,7 +22,9 @@ class CPU:
         # reserved registers
         self.interrupt_mask = self.reg[5]
         self.interrupt_status = self.reg[6]
-        self.stack_pointer = self.reg[7]
+        # stack pointer
+        self.reg[7] = 0xF4
+        # self.stack_pointer = self.reg[7]
 
     def load(self, file_name):
         """Load a program into memory."""
@@ -43,20 +45,7 @@ class CPU:
                     # print('saved command ', self.ram[address], 'at ', address)
                     address += 1
 
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
-
+        
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -93,6 +82,8 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         MUL = 0b10100010
+        PSH = 0b01000101 
+        POP = 0b01000110 
         
 
         running = True
@@ -106,18 +97,30 @@ class CPU:
 
             if ir == LDI:
                 self.reg[operand_a] = operand_b
-                # self.pc += 3
+ 
             elif ir == PRN:
                 print(self.reg[operand_a])
-                # self.pc += 2
+   
             elif ir == HLT:
                 running = False
-                # self.pc += 1    
+
             elif ir == MUL:
                 a = self.reg[operand_a]
                 b = self.reg[operand_b]
                 self.reg[operand_a] = a * b
-                # self.pc += 3
+
+            elif ir == PSH:
+                self.reg[7] -= 1
+                val = self.reg[operand_a]
+                ix = self.reg[7]
+                self.ram[ix] = val   
+
+            elif ir == POP:
+                sp = self.reg[7]
+                value = self.ram[sp]
+                self.reg[operand_a] = value
+                self.reg[7] += 1
+
 
             # increment the program counter based on
             # how many arguments this command includes:
