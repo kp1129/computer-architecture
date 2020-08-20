@@ -31,8 +31,6 @@ class CPU:
 
         address = 0
 
-        # For now, we've just hardcoded a program:
-
         with open(file_name) as file:
             for line in file:
                 clean_line = line.split("#")[0].strip()
@@ -82,9 +80,11 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         MUL = 0b10100010
-        PSH = 0b01000101 
+        PSH = 0b01000101 #push
         POP = 0b01000110 
-        
+        CLL = 0b01010000 #call
+        RET = 0b00010001 #return
+        ADD = 0b10100000
 
         running = True
         while running:
@@ -121,13 +121,42 @@ class CPU:
                 self.reg[operand_a] = value
                 self.reg[7] += 1
 
+            elif ir == CLL:
+                # print('memory rn: ', self.ram)
+                # print('what is in register 1? ', self.reg[1])
+                reg = operand_a
+                address = self.reg[reg]
+                return_address = self.pc + 2
+                # decrement stack pointer
+                self.reg[7] -= 1
+                sp = self.reg[7]
+                # put return address on the stack
+                self.ram[sp] = return_address
 
-            # increment the program counter based on
-            # how many arguments this command includes:
-            # take the command, right-shift 6 places, 
-            # and add the resulting 0, 1, or 2 to the 
-            # one-point increment
-            self.pc += 1 + (ir >> 6)    
+                # go to the function
+                self.pc = address
+
+            elif ir == RET:
+                # pop the return address off the stack
+                sp = self.reg[7]
+                return_address = self.ram[sp]
+                self.reg[7] += 1
+                # go to return address
+                self.pc = return_address
+
+            elif ir == ADD:
+                a = self.reg[operand_a]
+                b = self.reg[operand_b]
+                self.reg[operand_a] = a + b
+
+
+            if ir != RET and ir != CLL: 
+                # increment the program counter based on
+                # how many arguments this command includes:
+                # take the command, right-shift 6 places, 
+                # and add the resulting 0, 1, or 2 to the 
+                # one-point increment
+                self.pc += 1 + (ir >> 6)    
 
     def ram_read(self, ix):
         return self.ram[ix]
